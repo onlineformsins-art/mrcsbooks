@@ -209,6 +209,25 @@
     font-family:'Playfair Display',serif; font-size:1rem; font-weight:700;
     padding:5px 13px; border-radius:20px; border:1px solid rgba(201,168,76,0.3);
   }
+  .out-of-stock-overlay {
+    position:absolute; inset:0; z-index:6;
+    background:rgba(255,255,255,0.6);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .out-of-stock-stamp {
+    width: 130px; height: 130px;
+    border: 4px solid #b30000; border-radius: 50%;
+    color: #b30000; background: rgba(255,255,255,0.85);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transform: rotate(-15deg);
+    position: relative;
+  }
+  .out-of-stock-stamp::before {
+    content: ''; position: absolute; inset: 4px;
+    border: 1px solid #b30000; border-radius: 50%;
+  }
+  .out-of-stock-stamp span { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 800; text-transform: uppercase; line-height: 1; text-align: center; z-index: 1;}
+  .out-of-stock-stamp small { font-family: 'Crimson Pro', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border-top: 1px solid #b30000; border-bottom: 1px solid #b30000; padding: 2px 0; margin-top: 5px; width: 90%; text-align: center; z-index: 1;}
 
   .book-body { padding:18px 20px 8px; flex:1; }
   .book-id { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:6px; font-weight:600; }
@@ -227,6 +246,8 @@
   }
   .add-btn:hover { background:var(--green-mid); transform:scale(1.02); }
   .add-btn.added { background:linear-gradient(135deg, var(--gold), #b8860b); color:var(--green-deep); }
+  .add-btn.out-of-stock-btn { background: #f0f0f0; color: #9a8e82; cursor: not-allowed; }
+  .add-btn.out-of-stock-btn:hover { background: #f0f0f0; transform: none; }
 
   /* ── LIGHTBOX ── */
   .lightbox {
@@ -295,6 +316,51 @@
   footer a { color:var(--gold-light); text-decoration:none; }
 
   /* ── RESPONSIVE ── */
+  /* ── BUNDLE MODAL ── */
+  .bundle-modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.8);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+    backdrop-filter: blur(4px);
+  }
+  .bundle-modal-overlay.open { opacity: 1; pointer-events: all; }
+  .bundle-modal {
+    position: relative; max-width: 90vw; max-height: 90vh;
+    transform: scale(0.8) translateY(20px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .bundle-modal-overlay.open .bundle-modal { transform: scale(1) translateY(0); }
+  .bundle-modal img {
+    max-height: 80vh; max-width: 100%; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: block;
+  }
+  .bundle-close {
+    position: absolute; top: -15px; right: -15px; width: 36px; height: 36px;
+    background: white; border: none; border-radius: 50%; font-size: 18px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); color: var(--dark); font-weight: bold;
+    display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
+  }
+  .bundle-close:hover { transform: scale(1.1); }
+  .bundle-btn-container { margin-top: -30px; z-index: 10; position: relative; }
+  .bundle-buy-btn {
+    background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; cursor: pointer;
+    padding: 14px 32px; border-radius: 30px; font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700;
+    box-shadow: 0 10px 25px rgba(37,211,102,0.4); display: flex; align-items: center; gap: 10px;
+    animation: pulse-whatsapp 2s infinite; text-decoration: none;
+  }
+  @keyframes pulse-whatsapp { 0%, 100% { transform: scale(1); box-shadow: 0 10px 25px rgba(37,211,102,0.4); } 50% { transform: scale(1.05); box-shadow: 0 15px 35px rgba(37,211,102,0.6); } }
+
+  .sticky-bundle-btn {
+    position: fixed; bottom: 30px; left: 30px; z-index: 100;
+    background: linear-gradient(135deg, var(--gold), #b8860b); color: var(--green-deep);
+    border: none; padding: 12px 24px; border-radius: 30px;
+    font-family: 'Crimson Pro', serif; font-size: 1rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 8px 25px rgba(201,168,76,0.4); display: flex; align-items: center; gap: 8px;
+    animation: float-btn 3s ease-in-out infinite;
+  }
+  @keyframes float-btn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
   @media (max-width: 768px) {
     .topbar { padding:12px 18px; }
     .logo-text strong { font-size:13px; }
@@ -309,6 +375,24 @@
 </style>
 </head>
 <body>
+
+<!-- BUNDLE OFFER MODAL -->
+<div class="bundle-modal-overlay" id="bundleModalOverlay" onclick="closeBundleModal(event)">
+  <div class="bundle-modal" id="bundleModal">
+    <button class="bundle-close" onclick="closeBundleModal(event)">✕</button>
+    <img src="bundle_offer.jpg" alt="Special Bundle Offer">
+    <div class="bundle-btn-container">
+      <a href="https://wa.me/94777891344?text=I'm%20interested%20in%20the%20Special%20Bundle%20Offer%20for%20Rs%202000/-" target="_blank" class="bundle-buy-btn">
+        <svg viewBox="0 0 32 32" style="width:24px;height:24px;fill:white;"><path d="M16 3C9.37 3 4 8.37 4 15c0 2.3.63 4.45 1.73 6.3L4 29l7.93-1.69A12.93 12.93 0 0016 28c6.63 0 12-5.37 12-12S22.63 3 16 3zm0 22.5a10.44 10.44 0 01-5.3-1.44l-.38-.22-3.94.84.87-3.82-.25-.4A10.43 10.43 0 015.5 15c0-5.79 4.71-10.5 10.5-10.5S26.5 9.21 26.5 15 21.79 25.5 16 25.5zm5.77-7.87c-.32-.16-1.88-.93-2.17-1.03-.29-.1-.5-.16-.71.16-.21.32-.82 1.03-1 1.24-.18.21-.37.24-.69.08-.32-.16-1.35-.5-2.57-1.59-.95-.85-1.59-1.9-1.78-2.22-.19-.32-.02-.49.14-.65.15-.14.32-.37.48-.55.16-.18.21-.32.32-.53.1-.21.05-.4-.03-.56-.08-.16-.71-1.71-.97-2.34-.26-.62-.52-.53-.71-.54l-.6-.01c-.21 0-.55.08-.84.4-.29.32-1.1 1.08-1.1 2.63s1.13 3.06 1.28 3.27c.16.21 2.22 3.39 5.38 4.76.75.32 1.34.52 1.8.66.75.24 1.44.21 1.98.13.6-.09 1.88-.77 2.14-1.51.26-.74.26-1.38.18-1.51-.08-.13-.29-.21-.61-.37z"/></svg>
+        Purchase Now
+      </a>
+    </div>
+  </div>
+</div>
+
+<button class="sticky-bundle-btn" onclick="openBundleModal()">
+  🎁 Special Bundle Offer
+</button>
 
 <!-- LOADING SCREEN -->
 <div id="loadingScreen">
@@ -374,7 +458,7 @@
     <div class="lang-tab active" onclick="selectLang('tamil',this)">
       <div class="lang-tab-icon">🇱🇰</div>
       <div class="lang-tab-name">தமிழ் Books</div>
-      <div class="lang-tab-count">Tamil · 8 Books</div>
+      <div class="lang-tab-count">Tamil · 9 Books</div>
     </div>
     <div class="lang-tab" onclick="selectLang('english',this)">
       <div class="lang-tab-icon">🇬🇧</div>
@@ -445,9 +529,10 @@ const books = {
     {id:"B03",lang:"Tamil",isNew:false,price:400,title:"அல்குர்ஆன் வன்முறையைத் தூண்டுகிறதா?",titleEn:"Does Al-Qur'an Encourage Violence? (Tamil)",contents:["போர்: ஒர் அல்குர்ஆனியப் பார்வை","பிழையாகப் புரிந்துகொள்ளப்பட்ட இறை வசனங்கள்","அல்குர்ஆனில் போரைத் தூண்டும் வசனங்கள் காணப்படுவதற்கான காரணங்கள்"]},
     {id:"B04",lang:"Tamil",isNew:false,price:200,title:"மதத்தைத் துறத்தலும் மத நிந்தனையும் – ஒரு பார்வை",titleEn:"Apostasy & Blasphemy – A Review (Tamil)",contents:["ரித்தத் – மதத்தைத் துறத்தல் ஒரு விளக்கம்","மத நிந்தனை"]},
     {id:"B05",lang:"Tamil",isNew:false,price:400,title:"இஸ்லாமிய சட்டப் பின்னணியில் குடும்பப் பொருளாதாரப் பராமரிப்பு",titleEn:"Family Financial Support – Islamic Perspective (Tamil)",contents:["இரத்த உறவின் முக்கியத்துவம்","இரத்த உறவும் பொருளாதாரப் பராமரிப்பும்","செலவழித்தவுக்கான வழிகாட்டல்கள்","குடும்பப் பராமரிப்புக்கான மாதிரித் திட்டம்"]},
-    {id:"B06",lang:"Tamil",isNew:false,price:400,title:"ஸூரா தலாக் விளக்கவுரை",titleEn:"Surah At-Talaq Commentary (Tamil)",contents:["ஸூரா அத்தலாக்: பொது அறிமுகம்","சட்டங்களும் வழிகாட்டல்களும்","இறை சட்டங்களைப் பின்பற்றலின் அவசியம்"]},
+    {id:"B06",lang:"Tamil",isNew:false,price:400,title:"ஸூரா திலாக் விளக்கவுரை",titleEn:"Surah At-Talaq Commentary (Tamil)",contents:["ஸூரா அத்தலாக்: பொது அறிமுகம்","சட்டங்களும் வழிகாட்டல்களும்","இறை சட்டங்களைப் பின்பற்றலின் அவசியம்"]},
     {id:"B07",lang:"Tamil",isNew:false,price:400,title:"இஸ்லாமிய ஷரீஆ – யதார்த்தமும் பிரயோகமும்",titleEn:"Islamic Sharia – Reality & Application (Tamil)",contents:["ஷரீஆ – அர்த்தமும் வரைவிலக்கணமும்","அல்குர்ஆன் ஒரு சட்ட நூலா?","மனித நலன்களை மையப்படுத்தும் ஷரீஆவின் உயர் இலக்குகள்","இஸ்லாமிய ஷரீஆவும் இலங்கை முஸ்லிம் சமூகமும்"]},
     {id:"B13",lang:"Tamil",isNew:true,price:200,title:"ஸகாத் – பிரயோகம் சார் பத்வாக்கள்",titleEn:"Zakat – Practical Fatwas (Tamil)",contents:["கேள்வி பதில்"]},
+    {id:"B016",lang:"Tamil",isNew:true,outOfStock:true,price:400,title:"ஸகாத்தின் முக்கியத்துவமும் இலக்குகளும் -மாதிரி குத்பாக்கள்-",titleEn:"Importance and Objectives of Zakat - Model Khutbahs (Tamil)",contents:["ஆக்கம்: மிஷ்காத் ஆய்வுக்குழு"]},
   ],
   english: [
     {id:"B10",lang:"English",isNew:false,price:400,title:"Financial Support within the Family – An Islamic Perspective",titleEn:"Financial Support within the Family",contents:["Importance of maintaining blood relationships","Blood relationship and financial support","Blood relatives to be financially supported","Guidelines for financial support","Social benefits of financial support","A Model plan for family financial support"]},
@@ -473,7 +558,10 @@ window.addEventListener('load', () => {
   const ls = document.getElementById('loadingScreen');
   setTimeout(() => {
     ls.classList.add('fade-out');
-    setTimeout(() => ls.style.display = 'none', 600);
+    setTimeout(() => {
+      ls.style.display = 'none';
+      setTimeout(openBundleModal, 600);
+    }, 600);
   }, 1300);
 });
 
@@ -493,6 +581,7 @@ function renderBooks(lang) {
       <div class="book-cover" onclick="openLightbox('${b.id}','${b.titleEn.replace(/'/g,"\\'")}')">
         <span class="badge-lang">${b.lang}</span>
         ${b.isNew ? '<span class="badge-new">🆕 New</span>' : ''}
+        ${b.outOfStock ? '<div class="out-of-stock-overlay"><div class="out-of-stock-stamp"><span>Out Of<br>Stock</span><small>Temporarily</small></div></div>' : ''}
         <img src="${src}" alt="${b.titleEn}" loading="lazy">
         <span class="cover-zoom-hint">🔍 Click to enlarge</span>
         <span class="price-badge">Rs ${b.price.toLocaleString()}</span>
@@ -503,9 +592,12 @@ function renderBooks(lang) {
         <div class="book-contents"><ul>${b.contents.map(c=>`<li>${c}</li>`).join('')}</ul></div>
       </div>
       <div class="book-footer">
-        <button class="add-btn ${inCart?'added':''}" onclick="addToCart('${b.id}','${lang}',this)">
-          ${inCart ? '✓ Added to Cart' : '🛒 Add to Cart'}
-        </button>
+        ${b.outOfStock 
+          ? '<button class="add-btn out-of-stock-btn" disabled>Out of Stock</button>'
+          : `<button class="add-btn ${inCart?'added':''}" onclick="addToCart('${b.id}','${lang}',this)">
+               ${inCart ? '✓ Added to Cart' : '🛒 Add to Cart'}
+             </button>`
+        }
       </div>
     </div>`;
   }).join('');
@@ -597,6 +689,15 @@ function orderViaWhatsApp() {
   const total = cart.reduce((s,c)=>s+c.price*c.qty,0);
   const msg = `📚 *Book Order – Mishkath Research Institute*\n\n${lines}\n\n*Total: Rs ${total.toLocaleString()}*\n\nPlease confirm my order and delivery details. Thank you!`;
   window.open(`https://wa.me/94777891344?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function openBundleModal() {
+  document.getElementById('bundleModalOverlay').classList.add('open');
+}
+function closeBundleModal(e) {
+  if (!e || e.target === document.getElementById('bundleModalOverlay') || e.target.classList.contains('bundle-close')) {
+    document.getElementById('bundleModalOverlay').classList.remove('open');
+  }
 }
 </script>
 </body>
